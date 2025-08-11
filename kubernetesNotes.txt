@@ -757,5 +757,10 @@ kubelet has to upgrade manaually
 				 -->> kubect-proxy creats iptable entry.
 				 cat /var/log/kube-proxy.log
 		    
-			-->> 
+			-->> DNS in kubernetes:::
+			      -->> DNS for service:::
+				       -->> web-service.<ns_name>.svc.cluster.local
+					        <hosstname>.<namespaace>.<type>.<root>
+				  -->> pod are not createdd by deffault. 
+
 				 

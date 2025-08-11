@@ -1,0 +1,761 @@
+->>> ETCD:::
+       -->> It store the data as key-value pair
+	   -->> listens on 2379 port default
+	   -->> etcdctl --version
+	   -->> ./etcdctl  --help
+	   -->> to st the api version eport ETCDCTL_API=3 ./etcdctl version
+	   -->> to put the values ./etcdctl put key1 value1
+	   -->> to get the values ./etcdctl get key1
+	   -->> if you use the kubeadm it will install the etcd as pod
+	   
+->>> Kubet-apiserver:::
+       -->> The heart of the cluster
+	   -->> kubectl get pods -n kube-system --> if done by using kubeadm
+
+->>> Kube controller manager:::
+       -->> Manages a lot of things
+	   -->> watches Status -->> remidition
+	   -->> Node controller -> checks the status of the nodes for every 5s -> gives 5 inutes to comes
+	   -->> Replication Controller
+	   -->> kubectl get pods -n kebu-system --> if done by using kubeadm
+	   
+->>> kube scheduler:::
+       -->> deciding which pod goes to which node not the actually scheduling on that node kubelet does that
+	   -->> filter Nodes - Rank Nodes(priority) - 
+
+->>> Kubelet:::
+        -->> Lead all activit
+		-->> Registers the node with kube apiserver
+		-->> Monitor Node and pods
+		-->> Manually has to be installed
+		
+-->> Kube proxy:::
+       -->> Pod networking
+	   -->> Service cannot join the pod networks
+	   -->> that runs on each nodes
+	   -->> looks for service
+	   -->> Ip table rules
+	   
+-->> Pods:::
+       -->> Is the smallest object in cluster which runs the one or more container in it - kubernetes object
+-->> In YAML will have 1) apiversion 2) kind 3) metadata 4) spec
+-->> ReplicaSet:::
+       -->> Help us to have multiple replications of pod in cluster
+	   -->> Load Balancing & Scaling
+	   -->> can span between different roles
+	   -->>Labels and Selectors - To filter the multiple pods based on labels and selectors
+	   
+-->> Deployment:::
+       -->> rolling back strategy can be done here only.
+	   -->> comes higher in hierachy.
+	   
+-->> Services:::
+       -->> Servies provides loose coupling between applications
+	   -->> 1) Nodeport - for external access  - 30000 to 32767
+	        2) clusterIP - for internal access
+			3) LoadBalancer - provisions load balance
+			
+-->> Namespaces:::
+       -->> Creats namespace named Default, Kube-system, kube-public
+	   -->> Basically isolation of the reources e.g pod and dev
+	   -->> db-service.dev.svc.cluster.local
+	   -->> To restrict name space use resourceQuota
+	   
+-->>       imperative                                   vs         Declarative
+       -->>what to do also giving by step by step                  will not give the step by step
+	   -->>giving all instruction                                  we just declare the command( by system)
+	   -->>giving each comand                                      kubectl apply -f *	  
+	   
+-->> Deployment --> create
+     pod --> run
+	 svc -> kubectl expose deploy
+	        kubectl expose pod --type= --port= --name=
+-->> Kubectl apply command 
+       -->> 
+
+
+-->> Scheduling:::
+       -->> nodeName will be added in manifest files.
+	   -->> if No scheduler will be in pending state. we can schedule it manually
+	   -->> we have to add nodeName .
+	   -->> If existing pod is there it will not allow us to modify then we have to used pod bind definition.
+
+-->> Labels and selectors:::
+       -->> Standard methods to group the resouerces
+	   -->> kubectl get pods --selector app=app1
+	   -->> TO connect internal resources with each other by using Selectors
+	   -->> Under lables under spec file are attached to pod or deployment and at top added ones are for that specific object like deploy.
+	   
+-->> Taints and tolerations:::
+       -->> Taint which is used not to schedule the pod or deployment on that node which is mentioned
+	   -->> Tolerations is used to scheule the pod on node which is mentioned
+	   -->> Are used for restrictions on scheduling.
+	   -->> to taint a nodes 
+	        kubectl taint nodes node-name key=value:taint-effect  ->noSchedule|preferNoschedule|noexecute
+	   -->> tolerations are added to pods 
+	        to add in manifest file
+			tolerations:
+			-  key: "app"
+			   operator: "Equal"
+			   value: "blue"
+			   effect: "NoSchedule"
+	   -->> This will happen on Nodes not restriction of pod on certain node.
+	   -->> Scheduler will not schedule the pod on master node cause at installation one taint will added to it\
+	        kubectl describe node kubemaster | grep taint
+	   -->> To untaint 
+	         kubectl taint node node-name <key>-
+			 
+-->> Node selectors:::
+       -->> using node selector - nodeSelector: 
+	                                size:Large
+									
+	   -->> kubectl label nodes <node-name> <label-key>=<lable-value>
+	   -->> cannot provide the advance command
+
+-->> Node Affinity:::
+       -->> is to ensure pods are sheuled on particular node
+	   -->> affinity: 
+	          nodeAffinity:
+			    rquiredDuringSchedulingIgnoredDuringExecution:
+				  nodeSelectorTerms:
+				  -  matchExpressions:
+				     -  key:size
+					    operator: NotIn
+						values:
+						- Small
+	   -->> if could not match with expressions can be add  types:
+	        availbale:  requiredDuringSchedulingIgnoredDuringExecutions -->> if cannot find will not scheueled
+			            prefferedDuringSchedulingIgnoredDuringExectuion -->> if not available will do on any available node
+			avaialble once will only affect on scheling not on exceutions.
+
+-->> Resource Limits:::
+       -->> Scheduler checks for reources before scheduling the pod on nodes
+	   -->> we can give cpu, Memory  --> reqeuests- min
+	   -->> o.1 we can give low. 
+	         1 AWS vCPU
+			 1 GCP Core
+			 1 Azure Core
+	   -->> 256Mi low in memory
+	   -->> limits will restrict the pod to use that much of cpu or memory
+	   -->> set for each container 
+	   -->> if container goes beyond 
+	   -->> To avoid 
+	   -->> we can add limit-range kind: LimitRange on namespace level to set the default cpu for each pod
+	   -->> ResourceQuota  ->> to say limit the usage of cpu for all pods
+
+-->> DaemonSets:::
+        -->> Are like replicaset but it runs one copy of instances on each node.
+        -->> YOu need to monitor agent on all nodes so this will help us to keep on each nodes
+        -->> Kube-porxy can be depoyed using Daemon sets.
+        
+--->> we have to run the command to get the yaml 
+     kubectl create deploy --image=<> -n <> --dry-run=client -o yaml > *.yaml
+
+-->> Static pods:::
+      -->> kubelet can manage the node independently.
+	  -->> /etc/kubernetes/manifests kubelet checks this directory periodicly
+	  -->> you can only create pods not anything else.
+	  -->> it will be in kebelet.service
+	  
+-->> Priority Classes:::
+       -->> Helps us to find the priority. 
+	   -->> as high as 2billion -> for application andn workload.
+	   -->> kubectl get prirityclass to see the pclsees
+	   -->> priory-class.yaml
+	        apiversion: scheduling.k8s.io/v1
+			kind: PriorityClass
+			metadata:
+			  name:
+			value: 100000000
+			description:
+		-->. to add this to pod add 
+		priorityClassName: <>
+		-->> if we have to modify the current priority of pod we must have to create new prority calss then attch it to pod
+	    -->> preemptionPolicy: never
+
+-->> Multiple Scheduler:::
+       -->> must have different name
+	   -->> apiversion: kubescheduler.config.k8s.io/v1
+	        kind: KubeSchedulerConfiguration
+			profiles:
+			- schedulerName: dafault-schduler
+	    -->> ExecStart=/usr/local/bin/kube-scheuler \\
+		       --config=/etc/kubernetes/config/my-scheduler-config.yaml
+		-->> each scheluer have ther own configuration file.
+		-->> schedulerName: <>
+		-->> to check which shculer 
+		    kubectl get events -o wide
+        
+-->> Scheduler Profile:::
+       -->> scheduling qoue - filtering                                    -  scoring                           - Binding
+	   -->> <prioritySort>  - <NodeResourceFit|NodeName|NodeUnschedulable> - <NodeRosourcesFit|ImageLocality>     <DefaultBinder>
+
+-->> Admission controllers:::
+      -->> kubectl - authentication - authorization - create pod  - can be achieved  by using role.
+	  -->> RBAC control. At kuberneted api level.
+	  -->> ONly permit images from certain registry.
+	  -->> do not permit runAs root user.
+	  -->> kube-apiserver -h | grep enable-admission-plugins
+	  -->> need to add --enable-admission-plgins=<NodeRestriction,NamespaceAutoProvisiosn>
+	  
+-->> Validating and mutating admission controllers:::
+     -->> Mutating --> can change the reqeusts.
+	      validation --> who validates the reqeusts.
+		  admission controllers--> can do both.
+	 -->> we have webhook where we can configure like our own controllers.
+
+-->> Logging and monitoring:::
+      -->> Metrics server only in-memory
+	  -->> we have to git clone the metric server. 
+	       kubectl create -f *
+	  -->> kubectl top node
+	  
+-->> Rolling Updates and rollbacks:::
+      -->> Every rollout creates a new revision
+	  -->> kubectl rollout status deploy <>
+	  -->> kubectl rollour history deploy <>
+	  -->> Deployment startegy - 1) Destry 5 and create new. - Recreate
+	                             2) Rolling Strategy. - one by one happens - it is default.
+	  -->> kubectl set image deploy <> <>=<>
+	  -->> Rollback -- kubectl rollout undo deploy <>
+	  
+-->> CMD can be ovewritten.  like docker run nginx sleep 10
+     at ENtrypoint we nedd ["sleep"]
+	                    CMD ["5"]
+     docker run --entrypoint <>
+	 
+-->> in we have to ad arg: to provide in manifest file.
+     in manifest file 
+	    command: [""]
+
+-->> TO set the environmental variable
+     add in file 
+	 env:
+	 -  name:
+	    value:
+		
+-->	docker run -e <>=<>
+-->> configmaps:::
+     -->> in form key value pair	
+	    envFrom:
+		- configMapRef:
+		     - name:
+	 -->> kubectl create configmap <name>
+	        --from-literals
+			--from-file
+
+-->>Secrets are used to store the sensitive data
+   kubectl create secret generic\
+   <secretname> --from-literal=<key>=<values>
+   echo -n '' | base64
+   
+  -> not encrypted only encoded.
+  -> secrets are not encrypted in etcd
+  
+-->> Best practices for encryptionof secret data:::
+
+-->> Design Patterns of multi container pod
+   1) Co-located containers  -- order of startup is not defined. -- we can containers
+                                                                           -name:
+																		    image:
+																		   -name:
+																		    image:
+   2) Regular init containers --  in yaml
+                               initContainers:
+							   - name:
+							     image:
+								 command:
+								 
+   3) SidecarContainers -- order of startup can be defined.
+                            in yaml  -- initcontainers:
+							            - name:
+										 image:
+									     command:
+										 restartpolicy: 
+							
+-->> Scaling:::
+       -->> vertical scaling means increasing cpu and memory.
+	   -->> Horizontal means increasing the number of resources.
+	-->> Horizontal pod autoscaler:: -->> automatic scaling
+	                                  -->> based on cpu or memory or custom metrics
+									  -->> kubectl autoscale deploy <> \
+									       --cpu-percent=50 --min=1 --max=50
+									  -->> kubectl get hpa
+									  -->> kubectl delete hpa
+			declarative:: apiversion: autoscaling/v2
+			              kind: HorizontalPodAutoscalar
+						  metadata:
+						     name:
+						  spec:
+						    
+-->> if ther is change in reources now we have to delete and again create the pod while vertical scaling
+     -->> for this in-place resize of pod resources
+	 FEATURE_GATES=InPlacePodVericalScaling=true
+	 
+	 resizePolicy:
+	   - resourceName: cpu
+         restartpolicy: NotRequired
+       - resourceName: memory
+         restartPolicy: Containerrestart
+
+     -->> inly cpu and memory resources can be changed.
+	 -->> windows pod cannnot resize.
+	 
+-->> VPA (vertical pod autoscaler)
+     -->> do not come built in need to apply
+	 -->> vpa admission controller - vpa updater - vpa recommneder ( continously observers)
+	 
+	 -->> apiversion: autoscaling.k8s.io/v1
+	      kind: VerticalPodAutoscaler
+		  metadata:
+		    name:
+		  spec:
+		    targetRef:
+			  apiversion: apps/v1
+			  kind: Deployment
+			  name:
+			updatePolicy:
+			  updateMode: "Auto" | Recreate | intial | off
+			resourcePolicy:
+			  containerpolicies:
+			  - conatinerName: 
+			    minAllowed:
+				  cpu:
+				mazAllowed:
+				  cpu: 
+				controlledResources: ["cpu"]
+				
+	-->> kubectl get vpa
+	vpa- for statefule workloads
+	HPA -- for stateless
+	 
+	 
+-->> cluster Maintainanace:::
+     -->> If node is down it will wait for 5m.
+	 -->> kubectl drain <node> -- gracefully ternated and create on other node.
+	 -->> kubectl uncordon <node>
+	 -->> kubectl cordon <node>  -- will not move the pod.
+
+-->> Version of other components should not be highr than kube-apiserver.
+-->> kubeadm upgrade plan
+     kubeadm upgrade apply 
+	 even though master goes down does not mean that pod is unavailable. Only Management thing will be not available.
+	 
+	 1) master then 2) workers
+kubelet has to upgrade manaually
+-->> kubeadm upgrade plan 
+     apt-get upgrade -y kubeadm=1.12.0-00
+	 kubeadm upgrade apply v1.12.0
+	 -> kubectl get nodes will show the kubelet versions
+	 -> apt-get uprade -y kubelet=1.12.0-00
+	 -> worker upgrade 
+	     kubectl drain <nodename>
+		 upgrade kubeadm and kubelet
+		 kubeadm upgrade node config --kubelet-version v1.12.0
+		 systemctl restart kubelet
+		 kubectl uncordon <nodename>
+
+-->> Backup and Restore:::
+       -->> Backup condidates:: 
+	            -- cresousrce configd| ETCDcluster | perstistent volume
+				-- ETCD clsuters stores about cluster.
+				   -- ETCDCTL_API=3 etcdctl\
+				            snapshot save snapshot.db
+					  ETCDCTL_API=3 etcdctl\
+				            snapshot status snapshot.db 
+							service kube-apiserver stop
+                     ETCDCTL_API=3 etcdctl\
+				               snapshot restore snapsho.db \
+                                --data-dir <> 
+                    systemctl daoemon-reload
+
+
+-->> Security:::
+	-->> Security Primitives:::
+	     -->> 1) secure Hosts 
+		      2) secure kubernetes  -- contorlling access to kube-apiserver
+			     who can access -- authentication
+				 what they can do -- authorization
+			  3) TLS certificates -- encryption
+			  4) Network policies
+			  
+			  
+	-->> Authentication:::
+	      -->> Accounts -- Admins & Developers
+		  -->> static password file || static token file || certificate || identity services
+		  -->> static password file --  creat list of users and passwords  will have 3 column password,username,name,group 
+		       in --basic-auth-file=""
+		  -->> static token file --token-auth-file=<>.csv
+	
+	-->> TLS:::
+	     -->> 1)Syemmetric encryption -- same key for decrypting and encrypting
+		      2)Asymmetric encryption -- using private key & publuc lock.
+			    openssl genrsa -out my-bank.key -pubout > mybank.pem
+	    -->> TLS in kubernetes:::
+		     -->> apiserver.crt - pulblic apiserver.key - public key
+	    
+        -->> GEneration of certificate in cluster:::
+              1) easyrsa  2) openssl 3) cfssl
+            -> using openssl::
+               ca cerficate
+                 1) generate keys:
+                        openssl gensra -out ca.key 2048
+				 2) certificate signing reqeust:
+				         openssl req -new -key ca.key -subj "/CN=KUBERNETES-CA" -out ca.csr
+				 3) sign certificate:
+				     openssl x509 -req -in ca.csr -signkey ca.key -out ca.crt
+			  admin user::
+			     1) generate keys:
+                        openssl gensra -out admin.key 2048
+				 2) certificate signing reqeust:
+				         openssl req -new -key ca.key -subj "/CN=kube-admin" -out admin.csr
+				 3) sign certificate:
+				     openssl x509 -req -in admin.csr -signkey ca.key -out admin.crt
+			  kube scheduler::
+			     1) generate keys:
+                        openssl gensra -out ca.key 2048
+				 2) certificate signing reqeust:
+				         openssl req -new -key ca.key -subj "/CN=KUBERNETES-CA" -out ca.scr
+				 3) sign certificate:
+				     openssl x509 -req -in ca.csr -signkey ca.key -out ca.crt
+			  
+			  controller manager::
+			   1) generate keys:
+                        openssl gensra -out ca.key 2048
+				 2) certificate signing reqeust:
+				         openssl req -new -key ca.key -subj "/CN=KUBERNETES-CA" -out ca.scr
+				 3) sign certificate:
+				     openssl x509 -req -in ca.csr -signkey ca.key -out ca.crt
+			  kube-proxy::
+			   1) generate keys:
+                        openssl gensra -out ca.key 2048
+				 2) certificate signing reqeust:
+				         openssl req -new -key ca.key -subj "/CN=KUBERNETES-CA" -out ca.scr
+				 3) sign certificate:
+				     openssl x509 -req -in ca.csr -signkey ca.key -out ca.crt
+					 
+		
+		-->> view certificate details:::
+		     --> /etc/kubernetes/manifests/l=kube-apiserver.yaml
+	    -->> Certificate API:::
+		     --> kubectl get csr
+			     kubectl certificate approve|deny <csr_name>
+				 
+		-->> Kubeconfig:::
+		       #HOME/.kube/config  -- kube config file
+			   1) cluster 2) contexts 3) Users
+			   -> default in /root/.kube/config
+			  kubectl config view
+			  kubectl config use-context prod-user@production
+			  
+		-->> API Groups:::
+		     -->> 
+	    
+		-->> Authorization:::
+		     -->> restrict the user from accessing all cluster.
+			  1) node | 2) ABAC | 3) RBAC | 4) webhook -for external authorization
+			  --authorization-mode=Node,RBAC  --- by same order. 
+		-->> RBAC:::
+		      -->. Role object 
+			      apiversion:
+				  kind: Role
+				  metadata:
+				    name: developer
+				  rules:
+				  - apiGroups: [""]
+				    resources: ["pods"]
+					verbs: ["list","get","create","update","delete"]
+			
+		     -->> apiversion:
+			      kind: RoleBinding
+				  metadata:
+				    name:
+				  subjects: --> user datils
+				  - kind: Users
+				    name: dev-user
+					apiGroup: rbac.authorization.k8s.io/v1
+				  roleRef: --role name
+				    kind: Role
+					name: develeoper
+					apiGroup: rbac.authorization.k8s.io
+		     -->> happens on Namespace only.
+			 -->> kubectl get roles
+			 -->> kubectl get rolebindings
+			 -->> kubectl auth can-i <>  --as <user_name> -n <ns_name>
+			 -->>. can restrict pod also 
+			    by adding resourceNames: ["",""]
+			  -->> need to give namespaces.
+				
+		-->> Cluster Roles:::
+		     -->> clusterroles:::
+			      apiversion:
+				  kind: ClusterRole
+				  metadata:
+				    name:
+				  rules:
+				  - apiGroups: [""]
+				    resources: ["nodes"]
+					verbs: ["",""]
+					
+			 -->> clsuterrolebinding:::
+			      apiversion:
+				  kind: CLusterRoleBinding
+				  metada:
+				    name:
+		          subjects:
+				  - kind: User
+                    name:
+                    apiGroup
+                  roleRef:
+                    kind: ClusterRole
+                    name:
+                    apiGroup:
+
+
+       -->> Service Accounts:::
+             -->> User Account | service accounts
+                  by users     | by application (prometheus, Jenkins)
+			  -->> kubectl create serviceaccount dashboar-same
+			  -->> kubectl get sa  <JWT token> doesnot have the expiry time/.
+			  -->> kubectl describe sa <> -->> token will get create  -> creates secret object and then k=linked with sa  -- kubectl describe secret <>
+			  -->> simply to give the token for third party application to authenticate with api server.
+			  -->> add a new service acount to pod. We cannot modify the existing service account of already deployed pod but for deployments we can do.
+			      serviceAccountName: <>
+			  -->> to stop mount to servie
+			       automountServiceAccount: falsse
+			  -->> kubectl create token <sa_name>
+        -->> Image security:::
+		      -->> kubectl creaet secret docker-registry regcred \
+			       -- docker-server=
+				   -- docker-username=
+				   -- docker-password=
+				   -- docker-email= 
+			   -->> in pod difinit
+			        imagePullSecrets:
+					- name:
+		-->> Docker Security::
+		     -->> --user
+	    
+		-->> Security Context:::
+		     -->> is used to run the container or pod to restrict from using root user
+			     
+				 on pod:
+				 spec:
+				   securityContext:
+				     runAsUser: 1000
+			    
+				on container
+				 containers:
+				 - name:
+				   securityContext: 1000
+				   capabilities:
+				      add: [""]
+					  
+	    -->> Network Policies:::
+		      -->> Traffic:: 
+			       -> incoming traffic: ingress
+				      outgoing : egress
+					-> to restrict the communication between two pods.
+					-> we will use same labels and selectors to attach it to pod.
+			  -->> apiversion:
+			       kind: NetworkPolicy
+				   metadata:
+				     name:
+				   spec:
+				     podSelector:
+					   matchLables:
+					     role: db
+					 policyTypes:
+					 - ingress
+					 ingress:
+					 - from:
+					   - podSelector:
+					        matchLabels:
+							  name:
+					   ports:
+					   - protocol:
+					     port:
+					   
+		-->> DEveloping Network policies::
+		      ->> namespaeceSelector:
+			         matchLabels:
+					    name: 
+			  -->	to allow base on ip:
+			     	  ipBlock:
+				        cidr: <>/32
+				-->> for egress:
+				     egress:
+					 - to:
+					   - podSelector:
+					       matchLabels:
+						     name:
+						ports:
+						- protocol:
+						  port:
+	    
+		-->> Custom Resource Definition::
+		      -->> kind: CustomResourceDefinition
+			  --> kubectl api-resources
+			  --> for thsi we need controller.
+		-->> custom controller::
+		     -->> need to create in go or python.
+
+-->> Storage:::
+        -->> Docker Storage::
+		     -->> storage drivers  | volume storage 
+			  -->> Storage drivers:::
+			         -->> /var/lib/docker  -- docker is a layer architecture
+					 -->> using of cache saving us a lot of time.
+					 -->> docker run will create the container layar on top of other layers in images -- this container layer will be destroyed once container is down.
+					 -->> persistent volume by using 
+					     docker volume create <>  under /var/lib/docker/volumes
+						 docker run -v data_volume:<path> mysql
+						 -- docker will create automatically if not created by using docker create volume.
+					--> volume mount  -- from host path only and bind mount -- dircotry from any location in dokcer hosts
+					-->> storage drivers - overlay, overlay2
+		-->> volume plugin driver in dokcer:::
+		     -->>  AFS | Local
+			 -- docker run -it --volume-driver
+		-->> Conatainer storage interface:::
+		      -->> it is like standard for all container to support with kubernetes.
+			  -->> CNI for network standard
+			  -->> CSI statndard for storage
+		
+		-->> Volumes:::
+		     container:
+                volumeMounts:
+				- mountPaht: /opt
+                  name: data-volume				
+			 volumes:
+			 - name: data-volume
+			   hostPath:
+			     path: /data
+				 type: directory
+		   -- NFS | public cloud services
+		   -->> 
+		      volume:
+			  - name: 
+			    awsElasticBlockStorage:
+				  volumeID: <>
+				  fsType:
+			   within the pod definition file
+			   
+		-->> persistent volumes:::
+		       -->> To avoid the volume configuration on each pod in pod definition we use this.
+			   -->> cluster wide pool of volume create by Admin.
+			   -->> apiversion: v1
+			        kind: PersistentVolume
+					metadata:
+					  name:
+					spec:
+					  accessModes:
+					     - ReadWriteOnce | ReadOnlyMany | ReadWritemany
+					  capaciy:
+					    storage: 1Gi
+					  hostPath:
+					    path: /tmp/data --not use in production cluster.
+						
+		-->> Persistent volume claim:::
+		       -->> sperate objects in namespace. -- every pvs is binded to a single pv.
+			   -->> apiversion: v1
+			        kind: PersistentVolumeClaim
+					metadata:
+					  name:
+					spec:
+					  accessModes:
+					     - ReadWriteOnce
+					  resources:
+					    requests:
+						   storage: 500Mi
+			   -->> kubectl delete pvc
+			    -->> even though pvs is deleted the pv will be retained
+				  byt default it is kept as retained
+				    persistentVolumeReclaimPolicy: retain | recycle
+		
+		-->> pvc in pods:::
+		     -->> volume:
+			       - name:
+				     persistentVolumeClaim:
+					    claimName: <name>
+			-- to bound the pvc to pv we need same set of accessmodes in both.
+	    
+		-->> Storage classes:::
+		     -->> we have to create manually -- static provisioning  
+			 -->> will help to create automatically storage.  --dynamic provisioning.
+			 -->> apiversion: storage..k8s.io/v1
+			      kind: StorageClass
+				  metadata:
+				    name:
+				  provisioner: kubernetes.io/gce-pd
+				  in pvc we will add 
+				  storageClassName: <>
+				  it will create pv but it will be created by storageClass.
+			 -->> when we use pvc and storageclass , pv is not needed.
+			 
+
+-->> Networking:::
+    -->> On Linux 
+      -->> Switching:::
+	       -->> ip link -->> to see the --> eth0
+		   -->> ip addr add <> dev eth0 -- on the network | withing same network.
+		   -->> Rutings::: -- helps connect two seperate network.
+		   -->> Gateway:: -- is door to the outside the world   -- route command --ip route add <> via <>  -- ip route add default via <>
+		   -->> Linux host as simple router ::: 
+	 
+	 -->> DNS:::
+	       -->> cat /etc/hosts file to add DNS
+		   -->> /etc/resolve.conf  -- nameserver <>
+		   -->> /etc/hosts will have more precedence over DNS.   -- orde can be done cat /etc/nsswitch.conf  host:  files dns -- search <>c.comand
+		   -->> ping | dig 
+		   
+	  -->> Network Namespaces:::
+			-->> Are used by docker for n/w isolation.
+            -->> ps aux to see the process ids.
+            -->> ip netns add <>  -- to create nsamspace
+            -->> ip netns  -- to see
+            -->> ip llink
+            -->> ip netns exec red ip link	
+            -->> arp -- arctable			
+		    -->> using virtula ethernet in between two namespace  
+			     ip link add veth-red type veth peer name veth-blue 
+				 ip link set veth-red netns red
+				 ip link set veth-blue netns blue
+		
+		-->> Docker Networking:::
+		       -->> docker network ls  -- ip link create as docker0 
+			   -->> ip addr -- to see the network
+		
+		-->> CNI (contianer networking interface):::
+		       -->>  Standard for all container runtime for networking.
+	
+	    -->> CLuster Networking:::
+		     -->> 6443 - apiserver
+			     10250 kubelete
+				 10259 kube scheduler
+				 10257 kubecontroller
+
+             -->> pod Networking::
+			      -->> Every pod should have the unique ip addr . -- eery pod should be ablet o communicate with every other pod in the same node 
+				       -- every pod should be able to communicate with every other pod on other nodes without NAT
+				  -->> 
+				  
+			 -->> CNI in Kubernetes:::
+			      -->> containerd | cri-o
+				  -->> /opt/cni/bin   | /etc/cni/net.d
+				  
+			 -->> CNI WEAVE:::
+			        like calico  -- agent like
+			
+			 -->> IP Management:::
+			      -->> host-local plugin 
+				  cat /etc/cni/net.d/net-script.conf
+				  
+			-->> Service Networking:::
+			     -->> we use service to connect with the each pod.
+				 -->> kubect-api-server --service-cluster-ip-range ipNet (default: 10.0.0.0/24)
+				 -->> iptables -L -t nat | grep db-service
+				 -->> kubect-proxy creats iptable entry.
+				 cat /var/log/kube-proxy.log
+		    
+			-->> 
+				 

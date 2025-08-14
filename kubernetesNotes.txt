@@ -1,4 +1,4 @@
-->>> ETCD:::
+8->>> ETCD:::
        -->> It store the data as key-value pair
 	   -->> listens on 2379 port default
 	   -->> etcdctl --version
@@ -763,4 +763,40 @@ kubelet has to upgrade manaually
 					        <hosstname>.<namespaace>.<type>.<root>
 				  -->> pod are not createdd by deffault. 
 
-				 
+
+ -->>CORE DNS
+      -> It deploys in the cluster.
+      -> coredns as pod 
+      -> cat /etc/coredns/Corefile
+         plugins will be added
+      -> pods insecure for adding entry   of.      pod in a cluster
+				   -> configmap onject will be added.
+      -> kube-dns service will be created.
+ 
+-->INGRESS
+    --> helps user ti access the application on single url.
+    --> layer7 load balancer built in cluster.
+    --> ingress contoller
+      ingress resources -- rules.
+    --> it wont come with by default.
+    --> nginx , istio, gce
+    --> ingress controller -->> we have to deploy a deployment for nginx or istio -- configmap -- service -- serviceaccount
+    --> Ingress resources -->>> 
+       kind: Ingress
+       spec:
+         backend:
+           serviceName:
+           servicePort: 
+         
+       spec:
+         rules:
+         - http:
+             paths:
+             - path: /wear
+               backend:
+                  serviceNme:
+                  servicePort:
+            
+
+       - hosts: <domainname>
+    

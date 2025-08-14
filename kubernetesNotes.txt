@@ -1,4 +1,4 @@
-8->>> ETCD:::
+98->>> ETCD:::
        -->> It store the data as key-value pair
 	   -->> listens on 2379 port default
 	   -->> etcdctl --version
@@ -800,3 +800,45 @@ kubelet has to upgrade manaually
 
        - hosts: <domainname>
     
+--> Gateway API
+     --> LAYER 4 AND layer 7 next gen of load balancing and ingress
+    --> lack of multi tenancy in ingress that is why this introduced
+ --> gateway class -- gateway -- HTTPRoute 
+--> nginx will have tge annotations only not any other Ingress.
+
+
+--> DESIGN AND INSTALL KUBERNETES CLUSTER 
+  -->  kubeadm - on prem
+      GKE for GCP
+      KOPS for AWS
+      AZURE KUBERNETES SERVICES (AKS) for azure
+   --> purpose -- storage -- nodes
+ 
+
+ --> choosing kubernetes infra
+     --> openshift, vagrant
+     --> hosted solutions -- GKE, OPENSHIFT , EKS, AKS
+    
+ --> CONFIGURE HIGH AVAILABILITY 
+    --> even master is down user can access since worker are there.
+    --> having multiple master nodes. to avoid single point of failure. have load balancer for those master for apiserver.
+    -->  for controller and scheduler they should run in active standby. by using election leader elect.
+ kube-controller-manager -- leade-elect true.
+  --leader-elect-leqse-duration 15s
+  --leader-elect-renew-deadline 10s
+  --leader-elect-retry-period 2s
+  --> for etcd -- can be seperated its own servers
+in kube-apiserver.service
+add --etcd-servers= <>
+
+
+--> ETCD IN HIGH AVAILABILITY 
+   -->  if we have multiple ETCD then they will eelct a leader among themselvs
+ --> they use RAFT algo uses random timer 
+     quorum = N/2 +1  
+number of nodes should be up to cluster work properly. whole number only
+  --> have min 3 nodes.
+  --> etcd on master node called as stacked topology.
+
+
+ 

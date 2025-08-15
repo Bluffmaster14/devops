@@ -1,4 +1,4 @@
-98->>> ETCD:::
+->>> ETCD:::
        -->> It store the data as key-value pair
 	   -->> listens on 2379 port default
 	   -->> etcdctl --version
@@ -841,4 +841,35 @@ number of nodes should be up to cluster work properly. whole number only
   --> etcd on master node called as stacked topology.
 
 
+--> JSON PATH:::
+    --> To handle the cluster if there are 100s of pod..
+    --> kube apiserver shares the data in json format.
+    --> 1] idebtify the kubectl command
+        2] familiaze with jaon
+           -o json
+        3] form the json path query
+         .items[0].spec.containers[0].image
+        4] use the json path query with kubectl command
+         kubectl get pod -o=jsonpath='{ <aboveqeury> }'
+   -- l> can add more queries in one way
+   --> {"\n"} for new line
+       {"\t"} for tab
+
+  --> LOOPS-RANGE:::
+    --> For having in column way
+        for eqch node
+         print node name \t print cpu.  count \n
+end for
+
+      -->>> '{range.items[*]}
+              {.metadat.name} {"\t"} {.status.capacity.cpu} {"\n"}
+    {end}'
+
+     --> -o=custom-columns=<columnname>:<jsonpath>
+exclude itemcls
+
+can add more column by using comma
+
+--> JSON PATH SORT:::
+    --> --sort-by=.metadat.name
  
